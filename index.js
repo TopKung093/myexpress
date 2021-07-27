@@ -39,17 +39,35 @@ app.post('/webhook', line.middleware(config), (req, res) => {
         .then((result) => res.json(result));
 });
 
-function handleEvent(event) {
+async function handleEvent(event) {
     if (event.type !== 'message' || event.message.type !== 'text') {
         return Promise.resolve(null);
     }
+
+    let chat = await db.collection('chats').add(event);
+    console.log('Added document with ID: ', chat.id);
     //console.log(event);
     //console.log(event.message);
     //console.log(event.message.text);
-    return client.replyMessage(event.replyToken, {
-        type: 'text',
-        text: event.message.text,
-    });
+    // return client.replyMessage(event.replyToken, {
+    //     type: 'text',
+    //     text: event.message.text,
+    // });
+    switch (event.message.text) {
+        case "covid":
+            let newText = "สวัสดี เราเป็นบอทรายงานสถิติโควิดนะ";
+            return client.replyMessage(event.replyToken, {
+                type: 'text',
+                text: newText,
+            });
+            break;
+        default:
+            //console.log(event);
+            return client.replyMessage(event.replyToken, {
+                type: 'text',
+                text: event.message.text,
+            });
+    }
 }
 
 // Respond with Hello World! on the homepage:
