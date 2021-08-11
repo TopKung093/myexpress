@@ -1,7 +1,5 @@
-const fetch = require('node-fetch');
-
 async function sendData(data) {
-    let url = 'https://www.example.com/test'   // ผู้รับปลายทาง
+    let url = 'n'   // ผู้รับปลายทาง
     let content = data;
     if(typeof data == "object"){ 
         // แปลง object ให้กลายเป็น string ก่อน
@@ -22,13 +20,12 @@ function ex1() {
         "kiwi": "kiwi",
         "orange": "orange"
     };
-    console.log(typeof fruits1 );
-    console.log(typeof fruits2 );
-    console.log(typeof fruits3 );
+    console.log(typeof fruits1 == "object");
+    console.log(typeof fruits2 == "object");
+    console.log(typeof fruits3 == "object");
     //sendData(fruits1)
 }
 //ex1();
-
 function ex2() {
     let obj = { "name": "Kate", "pet": { "dog": "Corgi", "cat": "Persian" } };
     console.log(obj);
@@ -37,7 +34,7 @@ function ex2() {
     console.log(strJSON);
 }
 
-// ex1();
+
 //ex2();
 function ex3() {
     let strJSON = '{ "name": "Kate", "pet": { "dog": "Corgi", "cat": "Persian" } }';
@@ -46,8 +43,9 @@ function ex3() {
     let obj = JSON.parse(strJSON);
     console.log(obj);
 }
-// ex1();
-// ex2();
+
+
+
 //ex3();
 function ex4() {
     let fruits1 = "apple,banana,kiwi,orange";
@@ -84,6 +82,3 @@ function ex5(){
     console.log(data.active);
 }
 ex5();
-
-
-

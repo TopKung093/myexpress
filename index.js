@@ -48,6 +48,14 @@ async function handleEvent(event) {
     let chat = await db.collection('chats').add(event);
     console.log('Added document with ID: ', chat.id);
     switch (event.message.text) {
+        case "flex":
+            let payload_template = require('./payloads/template.json');            
+            let str_payload_template = JSON.stringify(payload_template);
+            let vaccince = await getTodayCovid();
+            payload_template = JSON.parse(eval('`' + str_payload_template + '`'));
+            //console.log(payload_template);    
+            return client.replyMessage(event.replyToken, payload_template);
+            break;
         case "covid":
             // let newText = "สวัสดี เราเป็นบอทรายงานสถิติโควิดนะ";
             let data = await getTodayCovid();
@@ -57,19 +65,20 @@ async function handleEvent(event) {
                 text: newText,
             });
             break;
-        default:
+        
             //console.log(event);
             // return client.replyMessage(event.replyToken, {
             //     type: 'text',
             //     text: event.message.text,
             // });
-    }
-
-    return client.replyMessage(event.replyToken, {
-        type: 'text',
-        text: event.message.text,
-    });
+        default:
+        
     
+        return client.replyMessage(event.replyToken, {
+            type: 'text',
+            text: event.message.text,
+        });
+    }
 }
 async function getTodayCovid() {
     let current_date = (new Date()).toISOString().split("T")[0];
