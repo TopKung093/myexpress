@@ -39,8 +39,17 @@ app.post('/webhook', line.middleware(config), (req, res) => {
 });
 
 async function handleEvent(event) {
-    if (event.type !== 'message' || event.message.type !== 'text') {
+    //if (event.type !== 'message' || event.message.type !== 'text') {
+    if (event.type !== 'message' || ! ["text","image"].includes(event.message.type)  ) {
+        console.log("ERROR", event.type);
         return Promise.resolve(null);
+    }
+    if(event.message.type === 'image'){
+        console.log("This is an image!!!",event.message);
+        return client.replyMessage(event.replyToken, {
+            type: 'text',
+            text: "Thank for an image",
+        });
     }
     //console.log(event);
     //console.log(event.message);
