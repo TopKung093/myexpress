@@ -1,45 +1,61 @@
 //.ENV
 const dotenv = require("dotenv");
 dotenv.config();
+
 //FIREBASE
-const firebase = require("firebase");
-require("firebase/storage");
-const firebaseConfig = {
-  apiKey: process.env.apiKey,
-  authDomain: process.env.authDomain,
-  projectId: process.env.projectId,
+const admin = require("firebase-admin");
+const serviceAccount = require("./firebase-key.json");
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
   storageBucket: process.env.storageBucket,
-  messagingSenderId: process.env.messagingSenderId,
-  appId: process.env.appId,
-  measurementId: process.env.measurementId,
-};
-const admin = firebase.initializeApp(firebaseConfig);
-const storage = firebase.storage();
+});
+const bucket = admin.storage().bucket();
+const db = admin.firestore();
+
 //Fetch or AXOIS
 const fetch = require("node-fetch");
 
-//IMAGE TYPE
-const imageType = require("image-type");
+//FILE SYSTEM
+const FileType = require("file-type");
+const path = require("path");
+const os = require("os");
+const fs = require("fs");
 
 async function uploadImageToFirebase() {
   console.log("You call this function !!!");
-  let url =
-    "https://www.khaosod.co.th/wpapp/uploads/2017/11/panda-story_650_121014094259.jpg";
-  // console.log(url);
-  const response = await fetch(url);
-  //Buffer
-  const buffer = await response.buffer();
-  let filename = url.split("/").pop(); //panda-story_650_121014094259.jpg";
-  // console.log(buffer);
-  console.log(imageType(buffer).mime);
-  console.log(filename);
-  const imageRef = storage.ref().child(filename);
-  // CONVERT BUFFER TO BASE 64
-  let message = "data:" + imageType(buffer).mime + ";base64," + buffer.toString("base64");
-  //SAVE TO FIREBASE
-  imageRef.putString(message, "data_url").then((snapshot) => {
-    console.log("Uploaded a data_url string!");
+  let image_id = "14627536262204";
+  let url = `https://api-data.line.me/v2/bot/message/${image_id}/content`;
+  let response = await fetch(url, {
+    headers: {
+      Authorization: "Bearer " + process.env.channelAccessToken,
+    },
   });
+  let buffer = await response.buffer();
+  // MAKE FILE NAME
+  let random_name = "_" + Math.random().toString(36).substr(2, 9);
+  let file_type = await FileType.fromBuffer(buffer);
+  let filename = random_name + "." + file_type.ext;
+  // PRINT INFORMATION
+  console.log(random_name);
+  console.log(file_type);
+  console.log(filename);
+
+  const tempLocalFile = path.join(os.tmpdir(), filename);
+  console.log(tempLocalFile);
+  fs.writeFileSync(tempLocalFile, buffer);
+  bucket.upload(
+    tempLocalFile,
+    { public: true },
+    async function (err, file, apiResponse) {
+      console.log("Uploaded !!!", apiResponse.mediaLink);
+      let media = await db
+        .collection("medias")
+        .add({ mediaLink: apiResponse.mediaLink });
+      console.log("Added document with ID: ", media.id);
+
+      fs.unlinkSync(tempLocalFile);
+    }
+  );
 }
 
 uploadImageToFirebase();
